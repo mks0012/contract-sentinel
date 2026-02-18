@@ -14,7 +14,7 @@ function App() {
     setError('');
     try {
       const response = await axios.post('http://127.0.0.1:5001/analyze', { text });
-      // Depending on how Gemini returns JSON, it might be a string or object
+      
       const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
       setResults(data);
     } catch (err) {
