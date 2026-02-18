@@ -12,8 +12,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# --- DATABASE CONFIGURATION (Relational: SQLite) ---
-# Evaluation: "Database — Any relational database"
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sentinel.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -24,17 +23,17 @@ class AnalysisRecord(db.Model):
     contract_snippet = db.Column(db.Text, nullable=False)
     analysis_json = db.Column(db.JSON, nullable=False)
 
-# Initialize database
+
 with app.app_context():
     db.create_all()
 
-# --- AI CLIENT CONFIGURATION ---
+
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key, http_options={'api_version': 'v1alpha'})
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    # Evaluation: "Interface Safety" - Validate input
+    
     data = request.json
     if not data or "text" not in data:
         return jsonify({"error": "Missing 'text' field"}), 400
@@ -42,7 +41,7 @@ def analyze():
     contract_text = data.get("text", "")
 
     try:
-        # Evaluation: "AI Usage" - Targeted prompting for legal risks
+        
         print("🚀 Analysis starting with gemini-3-flash-preview...")
         response = client.models.generate_content(
             model='gemini-3-flash-preview', 
@@ -57,9 +56,9 @@ def analyze():
         
         analysis_data = response.text
         
-        # Evaluation: "Correctness" - Persist to relational database
+        
         new_record = AnalysisRecord(
-            contract_snippet=contract_text[:500], # Store snippet for history
+            contract_snippet=contract_text[:500], 
             analysis_json=analysis_data
         )
         db.session.add(new_record)
@@ -69,7 +68,7 @@ def analyze():
         return analysis_data
 
     except Exception as e:
-        # Evaluation: "Observability" - Clear failure diagnosis
+        
         error_msg = str(e)
         print(f"❌ Detailed Error: {error_msg}")
         return jsonify({"error": "Analysis failed", "details": error_msg}), 500
